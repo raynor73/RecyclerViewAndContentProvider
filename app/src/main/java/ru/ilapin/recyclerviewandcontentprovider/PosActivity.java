@@ -1,48 +1,13 @@
 package ru.ilapin.recyclerviewandcontentprovider;
 
-import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Bundle;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
-import android.text.SpannableString;
-import android.text.style.UnderlineSpan;
-import android.util.TypedValue;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.*;
-import com.PilotCards.Common.*;
-import com.PilotCards.Database.BrandDao;
-import com.PilotCards.Database.HelperFactory;
-import com.PilotCards.Database.PosDao;
-import com.PilotCards.EventManager.EventListener;
-import com.PilotCards.EventManager.EventType;
-import com.PilotCards.ImageProcessor.ImageProcessor;
-import com.PilotCards.ImageProcessor.RecyclingImageView;
-import com.PilotCards.Model.*;
-import com.PilotCards.R;
-import com.PilotCards.Views.AddCardScreen.NewPhoto.TakeCardFrontPhoto;
-import com.PilotCards.Views.MainScreen.MainActivity;
-import com.PilotCards.Views.MainScreen.OffersAndCards.CardListCursorAdapter;
-import com.PilotCards.Views.MainScreen.OffersAndCards.OfferListCursorAdapter;
-import com.PilotCards.Views.Widgets.ActionBar.ActionBar;
-import com.PilotCards.Views.Widgets.ActionBar.ActionBarButton;
-import com.PilotCards.Views.Widgets.CustomButton;
-import com.PilotCards.Views.Widgets.CustomImageButton;
-import com.PilotCards.Views.Widgets.TabBar.UberTabBar;
-import com.PilotCards.Views.Widgets.TabBar.UberTabView;
-import org.apache.commons.lang3.StringUtils;
-
-import java.sql.SQLException;
-import java.util.List;
+import android.app.Activity;
 
 /**
  * @author Scalar
  *         Class PosActivity description
  */
-public class PosActivity extends HelpOverlayActivity {
-	public static final String POS_ID = "POS_ID";
+public class PosActivity extends Activity {
+	/*public static final String POS_ID = "POS_ID";
 	public static final String BRAND_SERVER_ID = "BRAND_SERVER_ID";
 
 	public static final float ACTIONS_TAB_WIDTH_FACTOR = 0.3314814814814815f;
@@ -585,5 +550,5 @@ public class PosActivity extends HelpOverlayActivity {
 		TextView emptyTextView = (TextView) findViewById(id);
 		emptyTextView.setTypeface(Fonts.getLightFont());
 		return emptyTextView;
-	}
+	}*/
 }

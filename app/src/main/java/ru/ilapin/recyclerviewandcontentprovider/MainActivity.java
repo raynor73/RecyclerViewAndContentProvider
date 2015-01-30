@@ -1,8 +1,11 @@
 package ru.ilapin.recyclerviewandcontentprovider;
 
+import android.content.Context;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.ContactsContract;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,13 +22,7 @@ import android.widget.TextView;
 
 public class MainActivity extends ActionBarActivity {
 
-	private static final String TAG = "MainActivity";
-	private static int sCounter;
-
-	private final String[] mData = new String[100];
-	private SomeAdapter mSomeAdapter;
-	private LooperThread mLooperThread = new LooperThread();
-	private Handler mHandler;
+	private ContactsAdapter mContactsAdapter;
 	private LinearLayoutManager mLayoutManager;
 
 	@Override
@@ -37,113 +34,57 @@ public class MainActivity extends ActionBarActivity {
 		mLayoutManager = new LinearLayoutManager(this);
 		recyclerView.setLayoutManager(mLayoutManager);
 
- 		updateData();
-		mSomeAdapter = new SomeAdapter();
-		recyclerView.setAdapter(mSomeAdapter);
+        final Cursor contactsCursor = getContentResolver().query(
+                ContactsContract.Contacts.CONTENT_URI,
+                new String[]{
+                        ContactsContract.Contacts.DISPLAY_NAME_PRIMARY
+                },
+                null,
+                null,
+                ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " ASC"
+        );
+        contactsCursor.moveToFirst();
 
-		/*mLooperThread.start();
-		mLooperThread.mHandler.post(mDataUpdateRoutine);*/
-
-		mHandler = new Handler(Looper.getMainLooper());
-		mHandler.post(mDataUpdateRoutine);
-
-		Log.d(TAG, Thread.currentThread().toString() + ": " + Thread.currentThread().getId());
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				Log.d(TAG, Thread.currentThread().toString() + ": " + Thread.currentThread().getId());
-			}
-		}).start();
+		mContactsAdapter = new ContactsAdapter(this, contactsCursor);
+		recyclerView.setAdapter(mContactsAdapter);
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.menu_main, menu);
-		return true;
-	}
+	private static class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHolder> {
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
+        private final Cursor mCursor;
+        private final Context mContext;
 
-		//noinspection SimplifiableIfStatement
-		if (id == R.id.action_settings) {
-			return true;
-		}
+        private ContactsAdapter(MainActivity context, Cursor cursor) {
+            this.mCursor = cursor;
+            this.mContext = context;
+        }
 
-		return super.onOptionsItemSelected(item);
-	}
-
-	private void updateData() {
-		for (int i = 0; i < mData.length; i++) {
-			mData[i] = String.format("Item #%02d(%d)", i, sCounter);
-		}
-
-		sCounter++;
-	}
-
-	private class SomeAdapter extends RecyclerView.Adapter<SomeAdapter.ViewHolder> {
-
-		@Override
-		public SomeAdapter.ViewHolder onCreateViewHolder(final ViewGroup parent, final int viewType) {
-//			return new ViewHolder(LayoutInflater.from(MainActivity.this).inflate(android.R.layout.simple_list_item_1, parent, false));
-			return new ViewHolder(LayoutInflater.from(MainActivity.this).inflate(R.layout.view_list_item, parent, false));
+        @Override
+		public ContactsAdapter.ViewHolder onCreateViewHolder(final ViewGroup parent, final int viewType) {
+			return new ViewHolder(LayoutInflater.from(mContext).inflate(android.R.layout.simple_list_item_1, parent, false));
 		}
 
 		@Override
-		public void onBindViewHolder(final SomeAdapter.ViewHolder holder, final int position) {
-			holder.checkBox.setText(mData[position]);
+		public void onBindViewHolder(final ContactsAdapter.ViewHolder holder, final int position) {
+            mCursor.moveToPosition(position);
 
-			holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-				@Override
-				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-					//notifyDataSetChanged();
-				}
-			});
+            holder.textView.setText(mCursor.getString(mCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)));
 		}
 
 		@Override
 		public int getItemCount() {
-			return mData.length;
+			return mCursor.getCount();
 		}
 
 		public class ViewHolder extends RecyclerView.ViewHolder {
 
 			public TextView textView;
-			public CheckBox checkBox;
 
 			public ViewHolder(final View itemView) {
 				super(itemView);
 
 				textView = (TextView) itemView.findViewById(android.R.id.text1);
-				checkBox = (CheckBox) itemView.findViewById(R.id.check_box);
 			}
-		}
-	}
-
-	private final Runnable mDataUpdateRoutine = new Runnable() {
-
-		@Override
-		public void run() {
-			updateData();
-			mSomeAdapter.notifyDataSetChanged();
-//			mLooperThread.mHandler.postDelayed(this, 1000);
-			mHandler.postDelayed(this, 1000);
-		}
-	};
-
-	private class LooperThread extends Thread {
-		public Handler mHandler;
-
-		public void run() {
-			Looper.prepare();
-			mHandler = new Handler();
-			mHandler.post(mDataUpdateRoutine);
-			Looper.loop();
 		}
 	}
 }
