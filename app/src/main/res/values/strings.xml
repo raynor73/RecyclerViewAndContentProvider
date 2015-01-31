@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">RecyclerView And ContentProvider</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+    <string name="app_name">Content providers and loaders</string>
+	<string name="menu_item_contacts_content_provider">ContentProvider контактов</string>
+	<string name="save">Сохранить</string>
+	<string name="capital">Столица</string>
 
 </resources>
