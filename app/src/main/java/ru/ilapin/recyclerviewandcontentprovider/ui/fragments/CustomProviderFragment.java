@@ -1,7 +1,7 @@
 package ru.ilapin.recyclerviewandcontentprovider.ui.fragments;
 
 import android.app.Activity;
-import android.content.Context;
+import android.content.ContentUris;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -30,12 +30,15 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 
 	private static final String TAG = "CustomProviderFragment";
 
+	private static final String CITY_ID_KEY = "CITY_ID_KEY";
+
 	private final static int CITIES_LOADER_ID = 0;
 	private final static int CAPITALS_LOADER_ID = 1;
+	private final static int SELECTED_CITY_LOADER_ID = 2;
 
 	private Activity mActivity;
 	private TextView mCityIdTextView;
-	private EditText mCityName;
+	private EditText mCityNameEditText;
 	private CheckBox mCapitalCheckbox;
 	private Button mSaveButton;
 	private RecyclerView mCapitalsRecyclerView;
@@ -43,6 +46,8 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 	private RecyclerView mCitiesRecyclerView;
 	private CitiesAdapter mCitiesAdapter;
 	private CitiesAdapter mCapitalsAdapter;
+
+	private long mEditingCityId;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -64,7 +69,7 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 		super.onViewCreated(view, savedInstanceState);
 
 		mCityIdTextView = (TextView) view.findViewById(R.id.city_id);
-		mCityName = (EditText) view.findViewById(R.id.city_name);
+		mCityNameEditText = (EditText) view.findViewById(R.id.city_name);
 		mCapitalCheckbox = (CheckBox) view.findViewById(R.id.city_is_capital);
 		mSaveButton = (Button) view.findViewById(R.id.save_city);
 		mCapitalsRecyclerView = (RecyclerView) view.findViewById(R.id.capitals_list);
@@ -79,10 +84,10 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 		Log.d(TAG, "onActivityCreated");
 		super.onActivityCreated(savedInstanceState);
 
-		mCitiesAdapter = new CitiesAdapter(mActivity);
+		mCitiesAdapter = new CitiesAdapter();
 		mCitiesRecyclerView.setAdapter(mCitiesAdapter);
 
-		mCapitalsAdapter = new CitiesAdapter(mActivity);
+		mCapitalsAdapter = new CitiesAdapter();
 		mCapitalsRecyclerView.setAdapter(mCapitalsAdapter);
 
 		LoaderManager loaderManager = getLoaderManager();
@@ -121,6 +126,16 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 						CitiesContract.Cities.NAME + " ASC"
 				);
 
+			case SELECTED_CITY_LOADER_ID:
+				return new CursorLoader(
+						mActivity,
+						ContentUris.withAppendedId(CitiesContract.Cities.CONTENT_URI, args.getLong(CITY_ID_KEY)),
+						null,
+						null,
+						null,
+						null
+				);
+
 			default:
 				throw new IllegalArgumentException("Unknown loader id: " + id);
 		}
@@ -137,6 +152,16 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 
 			case CAPITALS_LOADER_ID:
 				mCapitalsAdapter.setCursor(cursor);
+				break;
+
+			case SELECTED_CITY_LOADER_ID:
+				if (cursor != null) {
+					mCityIdTextView.setText(getString(R.string.city_id, cursor.getLong(cursor.getColumnIndex(CitiesContract.Cities._ID))));
+					mCityNameEditText.setText(cursor.getString(cursor.getColumnIndex(CitiesContract.Cities.NAME)));
+					mCapitalCheckbox.setChecked(cursor.getInt(cursor.getColumnIndex(CitiesContract.Cities.CAPITAL)) == 1);
+				} else {
+					resetCityEditingForm();
+				}
 				break;
 
 			default:
@@ -157,19 +182,25 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 				mCapitalsAdapter.setCursor(null);
 				break;
 
+			case SELECTED_CITY_LOADER_ID:
+				resetCityEditingForm();
+				break;
+
 			default:
 				throw new IllegalArgumentException("Unknown loader id: " + loader.getId());
 		}
 	}
 
-	private static class CitiesAdapter extends RecyclerView.Adapter<CitiesAdapter.ViewHolder> {
+	private void resetCityEditingForm() {
+		mEditingCityId = 0;
+		mCityNameEditText.setText(null);
+		mCapitalCheckbox.setChecked(false);
+		mCityIdTextView.setText(getString(R.string.city_id, 0));
+	}
+
+	private class CitiesAdapter extends RecyclerView.Adapter<CitiesAdapter.ViewHolder> {
 
 		private Cursor mCursor;
-		private final Context mContext;
-
-		private CitiesAdapter(Context context) {
-			this.mContext = context;
-		}
 
 		public void setCursor(Cursor cursor) {
 			this.mCursor = cursor;
@@ -178,7 +209,7 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 
 		@Override
 		public CitiesAdapter.ViewHolder onCreateViewHolder(final ViewGroup parent, final int viewType) {
-			return new ViewHolder(LayoutInflater.from(mContext).inflate(android.R.layout.simple_list_item_1, parent, false));
+			return new ViewHolder(LayoutInflater.from(mActivity).inflate(android.R.layout.simple_list_item_1, parent, false));
 		}
 
 		@Override
@@ -203,14 +234,23 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 			}
 		}
 
-		public class ViewHolder extends RecyclerView.ViewHolder {
+		public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
+			public long id;
 			public TextView textView;
 
 			public ViewHolder(final View itemView) {
 				super(itemView);
 
 				textView = (TextView) itemView.findViewById(android.R.id.text1);
+				itemView.setOnClickListener(this);
+			}
+
+			@Override
+			public void onClick(final View v) {
+				final Bundle args = new Bundle();
+				args.putLong(CITY_ID_KEY, id);
+				getLoaderManager().initLoader(SELECTED_CITY_LOADER_ID, args, CustomProviderFragment.this);
 			}
 		}
 	}

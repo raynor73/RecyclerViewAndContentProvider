@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Content providers and loaders</string>
+	<string name="app_name">Content providers and loaders</string>
 	<string name="menu_item_contacts_content_provider">ContentProvider контактов</string>
 	<string name="save">Сохранить</string>
 	<string name="capital">Столица</string>
@@ -9,5 +9,6 @@
 	<string name="reload_capitals_list">Обновить список столиц</string>
 	<string name="city_id_placeholder">#0</string>
 	<string name="provider_label">Города и столицы</string>
+	<string name="city_id">#%d</string>
 
 </resources>
