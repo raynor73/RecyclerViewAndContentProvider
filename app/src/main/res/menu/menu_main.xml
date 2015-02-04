@@ -5,8 +5,12 @@
 		tools:context="ru.ilapin.recyclerviewandcontentprovider.ui.activities.MainActivity">
 
 	<item
-		android:id="@+id/menu_item_contacts_content_provider"
-		android:title="@string/menu_item_contacts_content_provider"
-		app:showAsAction="never" />
+			android:id="@+id/menu_item_contacts_content_provider"
+			android:title="@string/menu_item_contacts_content_provider"/>
+
+	<item
+			android:id="@+id/menu_item_custom_provider"
+			android:title="@string/menu_item_custom_provider"
+			app:showAsAction="never" />
 
 </menu>

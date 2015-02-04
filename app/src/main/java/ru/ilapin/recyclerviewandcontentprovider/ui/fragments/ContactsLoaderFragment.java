@@ -12,6 +12,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,8 @@ import ru.ilapin.recyclerviewandcontentprovider.R;
  */
 public class ContactsLoaderFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
+	private static final String TAG = "ContactsLoaderFragment";
+
 	private final static int LOADER_ID = 0;
 
 	private ContactsAdapter mContactsAdapter;
@@ -32,6 +35,7 @@ public class ContactsLoaderFragment extends Fragment implements LoaderManager.Lo
 
 	@Override
 	public void onAttach(Activity activity) {
+		Log.d(TAG, "onAttach");
 		super.onAttach(activity);
 		
 		mActivity = activity;
@@ -39,11 +43,13 @@ public class ContactsLoaderFragment extends Fragment implements LoaderManager.Lo
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+		Log.d(TAG, "onCreateView");
 		return inflater.inflate(R.layout.fragment_contacts_loader, container, false);
 	}
 
 	@Override
 	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+		Log.d(TAG, "onViewCreated");
 		super.onViewCreated(view, savedInstanceState);
 
 		mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
@@ -51,6 +57,7 @@ public class ContactsLoaderFragment extends Fragment implements LoaderManager.Lo
 
 	@Override
 	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+		Log.d(TAG, "onActivityCreated");
 		super.onActivityCreated(savedInstanceState);
 
 		mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
@@ -62,7 +69,8 @@ public class ContactsLoaderFragment extends Fragment implements LoaderManager.Lo
 	}
 
 	@Override
-	public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		Log.d(TAG, "onCreateLoader");
 		return new CursorLoader(
 				mActivity,
 				ContactsContract.Contacts.CONTENT_URI,
@@ -77,11 +85,13 @@ public class ContactsLoaderFragment extends Fragment implements LoaderManager.Lo
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+		Log.d(TAG, "onLoadFinished");
 		mContactsAdapter.setCursor(cursor);
 	}
 
 	@Override
 	public void onLoaderReset(Loader<Cursor> cursorLoader) {
+		Log.d(TAG, "onLoaderReset");
 		mContactsAdapter.setCursor(null);
 	}
 

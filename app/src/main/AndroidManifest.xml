@@ -18,6 +18,13 @@
 			</intent-filter>
 
 		</activity>
+		
+		<provider
+			android:authorities="ru.ilapin.recyclerviewandcontentprovider.provider"
+			android:name=".providers.CitiesContentProvider"
+			android:icon="@drawable/ic_launcher"
+			android:label="@string/provider_label"
+			android:exported="false"/>
 
 	</application>
 

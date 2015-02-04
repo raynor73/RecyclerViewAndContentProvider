@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  @file colors.xml
+  @author ilapin
+
+  Copyright (c) 2004-2014. Parallels IP Holdings GmbH. All rights reserved.
+  http://www.parallels.com
+-->
+<resources>
+	<color name="white">#fff</color>
+</resources>
