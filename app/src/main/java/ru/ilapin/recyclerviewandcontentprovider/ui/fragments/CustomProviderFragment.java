@@ -2,8 +2,12 @@ package ru.ilapin.recyclerviewandcontentprovider.ui.fragments;
 
 import android.app.Activity;
 import android.content.ContentUris;
+import android.content.ContentValues;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -19,6 +23,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import ru.ilapin.recyclerviewandcontentprovider.R;
 import ru.ilapin.recyclerviewandcontentprovider.providers.CitiesContract;
@@ -50,6 +55,24 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 	private long mEditingCityId;
 
 	@Override
+	public void onCreate(final Bundle savedInstanceState) {
+		Log.d(TAG, "onCreate");
+		super.onCreate(savedInstanceState);
+
+		if (savedInstanceState != null) {
+			mEditingCityId = savedInstanceState.getLong(CITY_ID_KEY);
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(final Bundle outState) {
+		Log.d(TAG, "onSaveInstanceState");
+		super.onSaveInstanceState(outState);
+
+		outState.putLong(CITY_ID_KEY, mEditingCityId);
+	}
+
+	@Override
 	public void onAttach(Activity activity) {
 		Log.d(TAG, "onAttach");
 		super.onAttach(activity);
@@ -74,9 +97,34 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 		mSaveButton = (Button) view.findViewById(R.id.save_city);
 		mCapitalsRecyclerView = (RecyclerView) view.findViewById(R.id.capitals_list);
 		mCitiesRecyclerView = (RecyclerView) view.findViewById(R.id.cities_list);
+		mReloadButton = (Button) view.findViewById(R.id.reload_button);
 
 		mCapitalsRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
 		mCitiesRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
+
+		mSaveButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(final View v) {
+				ContentValues contentValues = new ContentValues();
+				contentValues.put(CitiesContract.Cities.CAPITAL, mCapitalCheckbox.isChecked());
+				contentValues.put(CitiesContract.Cities.NAME, mCityNameEditText.getText().toString());
+				mActivity.getContentResolver().update(
+						CitiesContract.Cities.CONTENT_URI,
+						contentValues,
+						CitiesContract.Cities._ID + " = ?",
+						new String[]{String.valueOf(mEditingCityId)}
+				);
+			}
+		});
+
+		mReloadButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(final View v) {
+				getLoaderManager().restartLoader(CAPITALS_LOADER_ID, null, CustomProviderFragment.this);
+			}
+		});
+
+		mCityIdTextView.setText(getString(R.string.city_id_placeholder, mEditingCityId));
 	}
 
 	@Override
@@ -93,6 +141,17 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 		LoaderManager loaderManager = getLoaderManager();
 		loaderManager.initLoader(CITIES_LOADER_ID, null, this);
 		loaderManager.initLoader(CAPITALS_LOADER_ID, null, this);
+
+		mActivity.getContentResolver().registerContentObserver(
+				CitiesContract.Cities.CONTENT_URI,
+				true,
+				new ContentObserver(new Handler(Looper.getMainLooper())) {
+					@Override
+					public void onChange(final boolean selfChange) {
+						Toast.makeText(mActivity, "Данные изменены", Toast.LENGTH_SHORT).show();
+					}
+				}
+		);
 	}
 
 	@Override
@@ -156,7 +215,8 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 
 			case SELECTED_CITY_LOADER_ID:
 				if (cursor != null) {
-					mCityIdTextView.setText(getString(R.string.city_id, cursor.getLong(cursor.getColumnIndex(CitiesContract.Cities._ID))));
+					mEditingCityId = cursor.getLong(cursor.getColumnIndex(CitiesContract.Cities._ID));
+					mCityIdTextView.setText(getString(R.string.city_id_placeholder, mEditingCityId));
 					mCityNameEditText.setText(cursor.getString(cursor.getColumnIndex(CitiesContract.Cities.NAME)));
 					mCapitalCheckbox.setChecked(cursor.getInt(cursor.getColumnIndex(CitiesContract.Cities.CAPITAL)) == 1);
 				} else {
@@ -195,7 +255,7 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 		mEditingCityId = 0;
 		mCityNameEditText.setText(null);
 		mCapitalCheckbox.setChecked(false);
-		mCityIdTextView.setText(getString(R.string.city_id, 0));
+		mCityIdTextView.setText(getString(R.string.city_id_placeholder, 0));
 	}
 
 	private class CitiesAdapter extends RecyclerView.Adapter<CitiesAdapter.ViewHolder> {
@@ -216,9 +276,10 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 		public void onBindViewHolder(final CitiesAdapter.ViewHolder holder, final int position) {
 			if (mCursor != null) {
 				mCursor.moveToPosition(position);
+				holder.id = mCursor.getLong(mCursor.getColumnIndex(CitiesContract.Cities._ID));
 				final String nameAndId = String.format(
 						"#%d %s",
-						mCursor.getLong(mCursor.getColumnIndex(CitiesContract.Cities._ID)),
+						holder.id,
 						mCursor.getString(mCursor.getColumnIndex(CitiesContract.Cities.NAME))
 				);
 				holder.textView.setText(nameAndId);
@@ -250,7 +311,7 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 			public void onClick(final View v) {
 				final Bundle args = new Bundle();
 				args.putLong(CITY_ID_KEY, id);
-				getLoaderManager().initLoader(SELECTED_CITY_LOADER_ID, args, CustomProviderFragment.this);
+				getLoaderManager().restartLoader(SELECTED_CITY_LOADER_ID, args, CustomProviderFragment.this);
 			}
 		}
 	}

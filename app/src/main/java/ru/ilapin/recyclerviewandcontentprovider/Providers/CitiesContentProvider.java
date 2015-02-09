@@ -24,17 +24,19 @@ public class CitiesContentProvider extends ContentProvider {
 
 	private static final int CITIES = 0;
 	private static final int CAPITALS = 1;
+	private static final int CITY = 2;
 
-	private DatabaseHelper databaseHelper;
+	private DatabaseHelper mDatabaseHelper;
 	private final UriMatcher mUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
 	@Override
 	public boolean onCreate() {
 		Log.d(TAG, "onCreate");
 
-		databaseHelper = new DatabaseHelper(getContext());
+		mDatabaseHelper = new DatabaseHelper(getContext());
 		mUriMatcher.addURI(CitiesContract.AUTHORITY, "cities", CITIES);
 		mUriMatcher.addURI(CitiesContract.AUTHORITY, "capitals", CAPITALS);
+		mUriMatcher.addURI(CitiesContract.AUTHORITY, "cities/#", CITY);
 
 		return true;
 	}
@@ -44,9 +46,9 @@ public class CitiesContentProvider extends ContentProvider {
 		Log.d(TAG, "query: " + uri);
 
 		switch (mUriMatcher.match(uri)) {
-			case CITIES:
+			case CITIES: {
 				Log.d(TAG, "cities URI match");
-				return databaseHelper.getReadableDatabase().query(
+				Cursor cursor = mDatabaseHelper.getReadableDatabase().query(
 						"City",
 						projection,
 						selection,
@@ -55,6 +57,11 @@ public class CitiesContentProvider extends ContentProvider {
 						null,
 						sortOrder
 				);
+
+				cursor.setNotificationUri(getContext().getContentResolver(), CitiesContract.Cities.CONTENT_URI);
+
+				return cursor;
+			}
 
 			case CAPITALS:
 				Log.d(TAG, "capitals URI match");
@@ -66,7 +73,7 @@ public class CitiesContentProvider extends ContentProvider {
 					capitalsSelectionArgs[selectionArgs.length] = "1";
 				}
 
-				return databaseHelper.getReadableDatabase().query(
+				return mDatabaseHelper.getReadableDatabase().query(
 						"City",
 						projection,
 						"(" + (selection == null ? "1" : selection) + ") AND " + CitiesContract.Cities.CAPITAL + " = ?",
@@ -75,6 +82,20 @@ public class CitiesContentProvider extends ContentProvider {
 						null,
 						sortOrder
 				);
+
+			case CITY:
+				Log.d(TAG, "city URI match");
+				Cursor cursor = mDatabaseHelper.getReadableDatabase().query(
+						"City",
+						projection,
+						CitiesContract.Cities._ID + " = ?",
+						new String[]{uri.getLastPathSegment()},
+						null,
+						null,
+						null
+				);
+				cursor.moveToFirst();
+				return cursor;
 
 			default:
 				Log.d(TAG, "no URI match");
@@ -86,7 +107,7 @@ public class CitiesContentProvider extends ContentProvider {
 	public String getType(final Uri uri) {
 		Log.d(TAG, "getType: " + uri);
 
-		return CitiesContract.Cities.CONTENT_TYPE;
+		return mUriMatcher.match(uri) == CITY ? CitiesContract.Cities.CONTENT_ITEM_TYPE : CitiesContract.Cities.CONTENT_TYPE;
 	}
 
 	@Override
@@ -107,6 +128,10 @@ public class CitiesContentProvider extends ContentProvider {
 	public int update(final Uri uri, final ContentValues values, final String selection, final String[] selectionArgs) {
 		Log.d(TAG, "update: " + uri);
 
-		return 0;
+		int affectedRows = mDatabaseHelper.getWritableDatabase().update("City", values, selection, selectionArgs);
+
+		getContext().getContentResolver().notifyChange(uri, null);
+
+		return affectedRows;
 	}
 }

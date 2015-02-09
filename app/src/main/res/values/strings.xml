@@ -7,8 +7,7 @@
 	<string name="capital">Столица</string>
 	<string name="menu_item_custom_provider">Собственный ContentProvider</string>
 	<string name="reload_capitals_list">Обновить список столиц</string>
-	<string name="city_id_placeholder">#0</string>
+	<string name="city_id_placeholder">#%d</string>
 	<string name="provider_label">Города и столицы</string>
-	<string name="city_id">#%d</string>
 
 </resources>
