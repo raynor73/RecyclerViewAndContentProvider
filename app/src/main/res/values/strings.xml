@@ -9,5 +9,6 @@
 	<string name="reload_capitals_list">Обновить список столиц</string>
 	<string name="city_id_placeholder">#%d</string>
 	<string name="provider_label">Города и столицы</string>
+	<string name="content_updated">Данные изменены</string>
 
 </resources>

@@ -148,7 +148,7 @@ public class CustomProviderFragment extends Fragment implements LoaderManager.Lo
 				new ContentObserver(new Handler(Looper.getMainLooper())) {
 					@Override
 					public void onChange(final boolean selfChange) {
-						Toast.makeText(mActivity, "Данные изменены", Toast.LENGTH_SHORT).show();
+						Toast.makeText(mActivity, getString(R.string.content_updated), Toast.LENGTH_SHORT).show();
 					}
 				}
 		);
