@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="ru.ilapin.recyclerviewandcontentprovider" >
 
+	<permission
+			android:name="ru.ilapin.recyclerviewandcontentprovider.READ_CITIES"
+			android:label="@string/permission_label"
+			android:description="@string/permission_description"/>
+
 	<uses-permission android:name="android.permission.READ_CONTACTS" />
 
 	<application
@@ -24,7 +29,8 @@
 			android:name=".providers.CitiesContentProvider"
 			android:icon="@drawable/ic_launcher"
 			android:label="@string/provider_label"
-			android:exported="false"/>
+			android:readPermission="ru.ilapin.recyclerviewandcontentprovider.READ_CITIES"
+			android:exported="true"/>
 
 	</application>
 

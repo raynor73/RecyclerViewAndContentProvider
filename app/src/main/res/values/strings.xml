@@ -10,5 +10,7 @@
 	<string name="city_id_placeholder">#%d</string>
 	<string name="provider_label">Города и столицы</string>
 	<string name="content_updated">Данные изменены</string>
+	<string name="permission_label">Доступ к списку городов</string>
+	<string name="permission_description">Возможность получить разрешение на чтение к списку городов.</string>
 
 </resources>
