@@ -22,7 +22,7 @@ public class MainActivity extends ActionBarActivity {
 		if (fragmentManager.findFragmentById(R.id.container) == null) {
 			fragmentManager
 					.beginTransaction()
-					.add(R.id.container, new ContactsLoaderFragment())
+					.add(R.id.container, new CustomProviderFragment())
 					.commit();
 		}
 	}
